@@ -14,7 +14,7 @@
                 </div>
                 @endif
                 <div class="col-12">
-                    <h1>List of All Users.. <a href="/admin/adduser" class="btn btn-primary mr-5" style="float:right">Add User</a></h1>
+                    <h1>List of All Users.. <a href="/adduser" class="btn btn-primary mr-5" style="float:right">Add User</a></h1>
                 </div>
 
             </div>
@@ -33,6 +33,7 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Profile Image</th>
+                                    <th>Designation</th>
                                     <th>Name</th>
                                     <th>Email</th>
                                     <th>Contact</th>
@@ -53,6 +54,7 @@
                                         <img width="100px" height="70px" style="border-radius: 50%;" src="{{ asset('storage/uploads/'.$val->profile_image) }}" alt="Profile Image">
                                         @endif
                                     </td>
+                                    <td>{{$val->role}}</td>
                                     <td>{{ $val->name }}</td>
                                     <td>{{ $val->email }}</td>
                                     <td>{{ $val->contact }}</td>
@@ -70,7 +72,7 @@
                                     <td>
                                         <form action="{{'delete_user'}}" method="POST">
                                             @csrf
-                                            <a href="{{url('/admin/delete_user',['userid'=>$val['id']])}}" class="btn btn-danger" onclick="return confirm('Do You Want to Delete User!.')"> Delete</a>
+                                            <a href="{{url('/delete_user',['userid'=>$val['id']])}}" class="btn btn-danger" onclick="return confirm('Do You Want to Delete User!.')"> Delete</a>
                                         </form>
                                     </td>
                                 </tr>

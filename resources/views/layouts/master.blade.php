@@ -6,5 +6,7 @@
 @yield('adduser-section')
 @yield('profile-section')
 @yield('list-section')
+@yield('update_profile-section')
+@yield('book-order-section')
 
 @include('layouts.footer')

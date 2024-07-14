@@ -34,6 +34,14 @@ class RestaurantController extends Controller
         }
     }
 
+    public function destroy(Request $request)
+    {
+        Auth::guard()->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect('/login');
+    }
+
     public function signup(Request $request)
     {
         // Validate the incoming request data
@@ -123,8 +131,54 @@ class RestaurantController extends Controller
     }
     public function list(Request $request)
     {
-        $users = User::orderBy('id', 'desc')->paginate(10);
+        $users = User::orderBy('id', 'asc')->paginate(10);
         return view('list', compact('users'));
     }
+
+    public function delete_user($userid)
+    {
+        $user = User::find($userid)->delete();
+        return redirect()->back();
+    }
+
+    public function edit_profile($userid)
+    {
+        $users = User::find($userid);
+        if (!is_null($users)) {
+            $user = compact('users', 'userid');
+            return view('update_profile')->with($user);
+        } else {
+            return redirect(route('res.profile'));
+        }
+    }
+
+    public function update_profile(Request $request, $userid)
+    {
+        $user = User::find($userid);
+        if ($request->hasFile('profile_image')) {
+            $filename = $request->profile_image->getClientOriginalName();
+            //Save Image to Folder
+            $request->profile_image->storeAs('public/uploads', $filename);
+            $user->profile  = $filename;
+        }
+        $request->validate([
+            'name' => 'required',
+            'email' => 'required',
+            'contact' => 'required|max:10|min:10',
+            'dob' => 'required',
+            'address' => 'required',
+        ]);
+        $user->name = $request['name'];
+        $user->email = $request['email'];
+        $user->contact = $request['contact'];
+        $user->dob = $request['dob'];
+        $user->gender = $request['gender'];
+        $user->address = $request['address'];
+        $user->save();
+
+            return redirect('/profile')->with('success', 'Profile Updated Seccessfully');
+        
+    }
+    
 
 }

@@ -34,12 +34,8 @@
                             </div>
                             <div class="col-sm-8 m-2">
                                 <div class="container p-1" style="background-color:#3b5998; border-radius:10px; color:white; height:50px;">
-                                    @if(Auth::user()['role']=='admin')
-                                    <h3>My Profile <a href="{{url('/admin/edit_profile',['userid'=>Auth::user()['id']])}}" style="text-decoration:none; color:black; float:right;"><i class="fa-solid fa-pen-to-square"></i></a> </h3>
-                                    @elseif(Auth::user()['role']='user')
-
                                     <h3>My Profile <a href="{{url('/edit_profile',['userid'=>Auth::user()['id']])}}" style="text-decoration:none; color:black; float:right;"><i class="fa-solid fa-pen-to-square"></i></a> </h3>
-                                    @endif
+                                  
                                 </div>
                                 <div>
                                     <div class="row mt-3">
