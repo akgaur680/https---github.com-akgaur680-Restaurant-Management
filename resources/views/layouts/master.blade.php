@@ -8,5 +8,6 @@
 @yield('list-section')
 @yield('update_profile-section')
 @yield('book-order-section')
+@yield('add-menu-section')
 
 @include('layouts.footer')

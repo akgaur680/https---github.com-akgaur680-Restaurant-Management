@@ -48,6 +48,12 @@
                 </a>
               </li>
               <li class="nav-item">
+                <a href="/item-list" class="nav-link">
+                <i class="fa-solid fa-bowl-rice nav-icon" style="color: #c2c7d0;"></i>
+                  <p>List of Items </p>
+                </a>
+              </li>
+              <li class="nav-item">
                 <a href="/book_order" class="nav-link">
                 <i class="fa-solid fa-bowl-rice nav-icon" style="color: #c2c7d0;"></i>
                   <p>Book Order</p>

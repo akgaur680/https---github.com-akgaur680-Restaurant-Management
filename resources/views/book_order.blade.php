@@ -1,115 +1,94 @@
+<?php
+
+use App\Models\Menu;
+use App\Models\User;
+
+$items = Menu::all();
+$cook = User::all()->where('role', 'cook');
+
+?>
+
 @extends('layouts.master')
 
 @section('book-order-section')
 
 <div class="content-wrapper">
-    <!-- Content Header (Page header) -->
-    <section class="content-header">
-      <div class="container-fluid">
-        <div class="row mb-2">
-          <div class="col-sm-6">
-            <h1>Book Order</h1>
-          </div>
-          
-        </div>
-      </div><!-- /.container-fluid -->
-    </section>
-
-    <!-- Main content -->
-    <section class="content">
-      <div class="container-fluid">
-        <div class="row">
-          <div class="col-12">
-            <!-- Default box -->
-            <div class="container ">
-                <div class="container m-auto"  >    
-               
-                <form action="{{'book_order'}}" method="post" class="row g-3 fw-bolder p-5" style="border-radius:10px ; " enctype="multipart/form-data">
-                    @csrf
-                    <div class="col-md-6">
-                        <label for="tableno" class="form-label">Table No. :</label>
-                        <select name="gender" class="form-select">
-                            <option selected >Choose..</option>
-                            <option value="M" >1</option>
-                            <option value="F" >2</option>
-                            <option value="O" >3</option>
-                            <option value="4">4</option>
-                            <option value="5">5</option>
-                            <option value="6">6</option>
-                            <option value="7">7</option>
-                            <option value="8">8</option>
-                            <option value="9">9</option>
-                            <option value="10">10</option>
-                        </select>
-                        <span class="text-danger" >
-                            @error('tableno')
-                            {{$message}}
-                            @enderror
-                        </span>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="" class="form-label">Customer Name :</label>
-                        <input type="text" class="form-control" name="name" id="" value="{{old('name')}}" >
-                        <span class="text-danger" >
-                            @error('name')
-                            {{$message}}
-                            @enderror
-                        </span>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="item" class="form-label">Choose Item :</label>
-                        <select name="item" class="form-select">
-                            <option selected >Choose..</option>
-                            <option value="Corn Pizza" >Corn Pizza</option>
-                            <option value="Mergherita Pizza" >Mergherita Pizza</option>
-                            <option value="Double Cheese Pizza" >Double Cheese Pizza</option>
-                            <option value="Grilled Sandwich">Grilled Sandwich</option>
-                            <option value="TIkki Sandwich">TIkki Sandwich</option>
-                            <option value="Sprouts Salad">Sprouts Salad</option>
-                            <option value="Tandoor Paneer Salad">Tandoor Paneer Salad</option>
-                            <option value="Banana Shake">Banana Shake</option>
-                            <option value="Milk Shake">Milk Shake</option>
-                            <option value="Mango Shake">Mango Shake</option>
-                        </select>
-                        <span class="text-danger" >
-                            @error('item')
-                            {{$message}}
-                            @enderror
-                        </span>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="" class="form-label">Quantity :</label>
-                        <input type="number" class="form-control" name="qty" id="" value="{{old('qty')}}">
-                        <span class="text-danger" >
-                            @error('qty')
-                            {{$message}}
-                            @enderror
-                        </span>
-                    </div>
-                    <div class="col-12">
-                        <label for="" class="form-label">Customization :</label>
-                        <textarea type="text" class="form-control" name="customization" placeholder="Add Any Customization Recommended by Customer.." rows="3"  >{{old('address')}}</textarea>
-                        <span class="text-danger" >
-                            @error('customization')
-                            {{$message}}
-                            @enderror
-                        </span>
-                    </div>
-                    
-                    <div class="col-12 text-center">
-                        <button type="submit" class="btn btn-primary">Book Order</button>
-                    </div>
-                    
-                </form>
-                </div>
-            </div>
-            <!-- /.card -->
-          </div>
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Book Order</h1>
         </div>
       </div>
-    </section>
-    <!-- /.content -->
-  </div>
-  
+    </div><!-- /.container-fluid -->
+  </section>
+
+  <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <!-- Default box -->
+          <div class="container">
+            <div class="container m-auto">
+              <form action="{{ route('res.save_order') }}" method="post" class="row g-3 fw-bolder p-5" style="border-radius:10px;" enctype="multipart/form-data">
+                @csrf
+                <div class="col-md-6">
+                  <label for="customer_name" class="form-label">Customer Name :</label>
+                  <input type="text" class="form-control" name="customer_name" id="customer_name" value="{{ old('customer_name') }}">
+                  <span class="text-danger">@error('customer_name'){{ $message }} @enderror </span>
+                </div>
+                <div class="col-md-6">
+                  <label for="price" class="form-label">Total Price :</label>
+                  <input type="number" class="form-control" name="price" id="price" value="{{ old('price') }}">
+                  <span class="text-danger">@error('price'){{ $message }}@enderror</span>
+                </div>
+                <div class="col-md-12 p-2 card">
+                  <label for="menu_items" class="form-label">Choose Items :</label>
+                  @foreach ($items as $item)
+                  <div class="form-check card-item">
+                    <input class="form-check-input" type="checkbox" name="menu_items[]" value="{{ $item->id }}" id="menu_{{ $item->id }}">
+                    <label class="form-check-label" for="menu_{{ $item->id }}">
+                      {{ $item->item_name }}
+                    </label>
+                    <input type="number" class="form-control mt-2" name="qty[{{ $item->id }}]" placeholder="Quantity" value="{{ old('qty.' . $item->id) }}">
+                    <span class="text-danger">@error('qty.'. $item->id){{ $message }}@enderror</span>
+                  
+                  </div>
+                  
+                  @endforeach
+                  <span class="text-danger">@error('menu_items'){{ $message }}@enderror</span>
+                  
+                </div>
+                
+                <div class="col-12">
+                  <label for="customization" class="form-label">Customization :</label>
+                  <textarea type="text" class="form-control" name="customization" placeholder="Add Any Customization Recommended by Customer.." rows="3">{{ old('customization') }}</textarea>
+                  <span class="text-danger">@error('customization'){{ $message }}@enderror</span>
+                </div>
+                <div class="col-md-6">
+                  <label for="cook_id" class="form-label">Assign to Cook :</label>
+                  <select name="cook_id" class="form-select">
+                    <option selected>Choose..</option>
+                    @foreach ($cook as $cooks)
+                    <option value="{{ $cooks->id }}">{{ $cooks->name }}</option>
+                    @endforeach
+                  </select>
+                  <span class="text-danger">@error('cook_id'){{ $message }}@enderror</span>
+                </div>
+                <div class="col-12 text-center">
+                  <button type="submit" class="btn btn-primary">Book Order</button>
+                </div>
+              </form>
+            </div>
+          </div>
+          <!-- /.card -->
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- /.content -->
+</div>
 
 @endsection
