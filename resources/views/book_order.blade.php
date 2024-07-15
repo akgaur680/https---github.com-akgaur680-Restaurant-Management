@@ -17,6 +17,13 @@ $cook = User::all()->where('role', 'cook');
   <section class="content-header">
     <div class="container-fluid">
       <div class="row mb-2">
+      @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ session('success') }}
+
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                @endif
         <div class="col-sm-6">
           <h1>Book Order</h1>
         </div>
