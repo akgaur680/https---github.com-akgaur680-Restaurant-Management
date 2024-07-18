@@ -85,13 +85,9 @@
                             </div>
                             <hr style="margin: 0% 5%;  width:90%;" class="p-1">
 
-                            @if(Auth::user()['role']=='admin')
-                            <a href="/admin/index">
-                                @elseif(Auth::user()['role']=='user')
-                                <a href="/index">
-                                    @endif
+                                <a href="/">
                                 <input name="reset" value="Close" class="btn btn-danger"></a>
-                            <p>If You have any issue, Please <a href="contact.php" style="text-decoration: none;">
+                            <p>If You have any issue, Please <a href="/contactus" style="text-decoration: none;">
                                     Contact Us..</a></p>
                         </div>
                     </div>

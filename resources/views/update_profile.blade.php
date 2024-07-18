@@ -87,8 +87,8 @@
 
                                 </div>
                                 <div class="col-md-7">
-                                    <label for="" class="form-label">Profile Image :</label>
-                                    <input type="file" name="profile" class="form-control" id="inputCity" value="{{old('profile_image')}}">
+                                    <label for="profile_image" class="form-label">Profile Image :</label>
+                                    <input type="file" name="profile_image" class="form-control" id="inputCity" value="{{old('profile_image')}}">
                                     <span class="text-danger">
                                         @error('profile_image')
                                         {{$message}}

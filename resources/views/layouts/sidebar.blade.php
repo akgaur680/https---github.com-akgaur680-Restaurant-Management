@@ -35,6 +35,7 @@
                   <p>Profile</p>
                 </a>
               </li>
+              @if (Auth::user()['role']=='admin')
               <li class="nav-item">
                 <a href="/adduser" class="nav-link">
                  <i class="fa-solid nav-icon fa-user-plus" style="color: #c2c7d0;"></i>
@@ -53,10 +54,22 @@
                   <p>List of Items </p>
                 </a>
               </li>
+              
+              @endif
+             
+             
+             @if(Auth::user()['role']!=='cook')
               <li class="nav-item">
                 <a href="/book_order" class="nav-link">
                 <i class="fa-solid fa-bowl-rice nav-icon" style="color: #c2c7d0;"></i>
                   <p>Book Order</p>
+                </a>
+              </li>
+              @endif
+              <li class="nav-item">
+                <a href="/all-orders" class="nav-link">
+                <i class="fa-solid fa-bowl-rice nav-icon" style="color: #c2c7d0;"></i>
+                  <p>View All Order</p>
                 </a>
               </li>
             </ul>

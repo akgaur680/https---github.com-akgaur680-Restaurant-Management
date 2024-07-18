@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Http\Controllers;
-
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -12,9 +10,14 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\Menu;
 use App\Models\Order;
 use App\Models\Order_Menu;
-
+use App\Models\Order_Status;
 class RestaurantController extends Controller
 {
+    public function index()
+    {
+        $order = Order::with('menu')->get();
+        dd($order);
+    }
     public function login(Request $request)
     {
         // Validate the incoming request data
@@ -22,10 +25,8 @@ class RestaurantController extends Controller
             'email' => 'required|email',
             'password' => 'required',
         ]);
-
         try {
             $user = User::where('email', $request->email)->firstOrFail();
-
             if (Hash::check($request->password, $user->password)) {
                 Auth::login($user);
                 return redirect('/');
@@ -36,7 +37,6 @@ class RestaurantController extends Controller
             return back()->withErrors(['email' => 'Invalid Credentials']);
         }
     }
-
     public function destroy(Request $request)
     {
         Auth::guard()->logout();
@@ -44,7 +44,6 @@ class RestaurantController extends Controller
         $request->session()->regenerateToken();
         return redirect('/login');
     }
-
     public function signup(Request $request)
     {
         // Validate the incoming request data
@@ -58,19 +57,15 @@ class RestaurantController extends Controller
             'address' => 'required|string|max:255',
             // 'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
-
         try {
             DB::beginTransaction();
-
             $user = new User;
-
             if ($request->hasFile('profile_image')) {
-                $file = $request->file('profile_image');
+                $file = $request->profile_image;
                 $filename = date('Ymd') . '_' . time() . '.' . $file->getClientOriginalExtension();
                 $file->storeAs('public/uploads', $filename);
                 $user->profile_image = $filename;
             }
-
             $user->name = $request->name;
             $user->email = $request->email;
             $user->contact = $request->contact;
@@ -78,13 +73,9 @@ class RestaurantController extends Controller
             $user->gender = $request->gender;
             $user->address = $request->address;
             $user->password = Hash::make($request->password);
-
             $user->save();
-
             DB::commit();
-
             Auth::login($user);
-
             return redirect('/');
         } catch (\Exception $e) {
             DB::rollback();
@@ -106,7 +97,6 @@ class RestaurantController extends Controller
             if ($request->hasFile('profile_image')) {
                 $file = $request->profile_image->getClientOriginalExtension();
                 $filename = date('Ymd') . time() . '.' . $file;
-
                 $request->profile_image->storeAs('public/uploads' . $filename);
                 $user->profile_image = $filename;
             }
@@ -116,7 +106,6 @@ class RestaurantController extends Controller
             $user->contact = $request['contact'];
             $user->role = $request['role'];
             $user->save();
-
             DB::commit();
         } catch (\Exception $e) {
             DB::rollback();
@@ -134,13 +123,11 @@ class RestaurantController extends Controller
         $users = User::orderBy('id', 'asc')->paginate(10);
         return view('list', compact('users'));
     }
-
     public function delete_user($userid)
     {
         $user = User::find($userid)->delete();
         return redirect()->back();
     }
-
     public function edit_profile($userid)
     {
         $users = User::find($userid);
@@ -151,15 +138,14 @@ class RestaurantController extends Controller
             return redirect(route('res.profile'));
         }
     }
-
     public function update_profile(Request $request, $userid)
     {
         $user = User::find($userid);
         if ($request->hasFile('profile_image')) {
-            $filename = $request->profile_image->getClientOriginalName();
+            $filename = $request->profile_image->getClientOriginalExtension();
             //Save Image to Folder
             $request->profile_image->storeAs('public/uploads', $filename);
-            $user->profile  = $filename;
+            $user->profile_image  = $filename;
         }
         $request->validate([
             'name' => 'required',
@@ -175,10 +161,8 @@ class RestaurantController extends Controller
         $user->gender = $request['gender'];
         $user->address = $request['address'];
         $user->save();
-
         return redirect('/profile')->with('success', 'Profile Updated Seccessfully');
     }
-
     public function add_item(Request $request)
     {
         $item = new Menu;
@@ -190,22 +174,18 @@ class RestaurantController extends Controller
         $item->full_item_price = $request['full_item_price'];
         $item->half_item_price = $request['half_item_price'];
         $item->save();
-
         return redirect('/item-list')->with('success', 'New Item Added to Menu ');
     }
-
     public function item_list(Request $request)
     {
         $items = Menu::orderBy('id', 'asc')->paginate(10);
         return view('item_list', compact('items'));
     }
-
     public function delete_item($itemid)
     {
         $item = Menu::find($itemid)->delete();
         return redirect()->back()->with('success', 'Item Deleted Successfully');
     }
-
     public function edit_item($itemid)
     {
         $items = User::find($itemid);
@@ -216,12 +196,9 @@ class RestaurantController extends Controller
             return redirect(route('res.item-list'));
         }
     }
-
-
     public function update_item(Request $request, $itemid)
     {
         $item = User::find($itemid);
-
         $request->validate([
             'item_name' => 'required',
             'full_item_price' => 'required',
@@ -230,10 +207,8 @@ class RestaurantController extends Controller
         $item->full_item_price = $request['full_item_price'];
         $item->half_item_price = $request['half_item_price'];
         $item->save();
-
         return redirect('/item-list')->with('success', 'Menu Item Updated Seccessfully');
     }
-
     public function book_order()
     {
         $menu = Menu::all();
@@ -241,30 +216,76 @@ class RestaurantController extends Controller
     }
     public function save_order(Request $request)
     {
-        
         $request->validate([
             'customer_name' => 'required',
             'cook_id' => 'required',
             'menu_items' => 'required|array',
-            
+            'full_or_half' => 'required|array',
+            'qty' => 'required|array',
         ]);
-        //Insert in Order Table
+        // Calculate total price
+        $totalprice = 0;
+        foreach ($request->menu_items as $key => $menuItem) {
+            $menu = Menu::find($menuItem);
+            if ($menu) {
+                if ($request->full_or_half[$key] == '1') {
+                    $totalprice += $menu->full_item_price * $request->qty[$key];
+                } elseif ($request->full_or_half[$key] == '2') {
+                    $totalprice += $menu->half_item_price * $request->qty[$key];
+                }
+            }
+        }
+        // Insert into Order table
         $order = new Order;
         $order->cook_id = $request->cook_id;
-        $order->waiter_id = Auth::user()->id;
-        $order->order_total_price = $request->price;
+        $order->waiter_id = Auth::id(); // Assuming you want to store waiter ID
+        $order->order_total_price = $totalprice;
         $order->customer_name = $request->customer_name;
+        $order->customization = $request->customization;
         $order->save();
-
-        // Insert in Order-Menu Table
-        foreach ($request->menu_items as $menuItem) {
+        // Insert into Order_Menu table
+        foreach ($request->menu_items as $key => $menuItem) {
             $order_menu = new Order_Menu;
             $order_menu->menu_id = $menuItem;
-            $order_menu->qty = $request->qty[$menuItem];
+            $order_menu->full_or_half = $request->full_or_half[$key];
+            $order_menu->qty = $request->qty[$key];
             $order_menu->order_id = $order->id;
             $order_menu->save();
         }
-
         return redirect()->route('res.book_order')->with('success', 'Order Booked Successfully');
+    }
+    public function all_order()
+    {
+        if (Auth::user()['role'] !== 'admin') {
+            $order = Order::with(['menu', 'cook', 'waiter', 'order_menu', 'order_status'])->where('cook_id', Auth::user()['id'])
+                ->orWhere('waiter_id', Auth::user()['id'])
+                ->orderBy('status_id', 'asc')->get();
+        } elseif (Auth::user()['role'] == 'admin') {
+            $order = Order::with(['menu', 'cook', 'waiter', 'order_menu', 'order_status'])->orderBy('status_id', 'asc')->get();
+        }
+        return view('all_order', compact('order'));
+    }
+    public function view_order(Request $request, $orderid)
+    {
+        $order = Order::with(['menu', 'cook', 'waiter', 'order_menu', 'order_status'])->find($orderid);
+        if (!$order) {
+            return redirect()->back()->with('error', 'Order not found');
+        }
+        return view('view_order', compact('order'));
+    }
+    public function update_order_status(Request $request, $orderid)
+    {
+        $order_status = Order::find($orderid);
+        $request->validate([
+            'status_id' => 'required',
+        ]);
+        $order_status->status_id = $request['status_id'];
+        $order_status->save();
+        return redirect()->route('res.order-list')->with('success', 'Order Updated Successfully');
+    }
+    public function delete_order($orderid)
+    {
+        $order = Order::find($orderid)->delete();
+        return redirect()->back()->with('success', 'Order Deleted Successfully');
     }
 }

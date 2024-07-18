@@ -22,6 +22,24 @@ class Order extends Model
 
     public function menu()
     {
-        return $this->belongsToMany(Menu::class, 'order-menu')->withPivot('qty')->withTimestamps();
+        return $this->belongsToMany(Menu::class, 'Order_Menu');
+    }
+
+    public function order_menu(){
+        return $this->hasMany(Order_Menu::class);
+    }
+    
+    public function full_or_half(){
+        return $this->belongsTo(Order_Menu::class, 'full_or_half');
+    }
+
+    public function cook(){
+        return $this->belongsTo(User::class, 'cook_id');
+    }
+    public function waiter(){
+        return $this->belongsTo(User::class, 'waiter_id');
+    }
+    public function order_status(){
+        return $this->belongsTo(Order_Status::class, 'status_id');
     }
 }

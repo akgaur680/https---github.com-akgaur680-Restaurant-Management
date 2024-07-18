@@ -17,5 +17,8 @@ class Order_Menu extends Model
         'menu_id',
         'qty',
     ];
+
+   
+
 }
 

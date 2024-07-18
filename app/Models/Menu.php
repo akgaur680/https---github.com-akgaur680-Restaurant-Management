@@ -18,7 +18,7 @@ class Menu extends Model
 
         public function order()
         {
-            return $this->belongsToMany(Order::class, 'order_menu')->withPivot('qty')->withTimestamps();
+            return $this->belongsToMany(Order::class, 'Order_Menu');
         }
 
 }
