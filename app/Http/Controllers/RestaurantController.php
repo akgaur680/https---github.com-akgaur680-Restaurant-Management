@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Http\Controllers;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -11,6 +13,7 @@ use App\Models\Menu;
 use App\Models\Order;
 use App\Models\Order_Menu;
 use App\Models\Order_Status;
+
 class RestaurantController extends Controller
 {
     public function index()
@@ -267,12 +270,55 @@ class RestaurantController extends Controller
     }
     public function view_order(Request $request, $orderid)
     {
-        $order = Order::with(['menu', 'cook', 'waiter', 'order_menu', 'order_status'])->find($orderid);
+        $order = Order::with(['cook', 'waiter', 'order_menu.menu', 'order_status'])->find($orderid);
+
+        $order_status = Order_Status::all();
+        if (Auth::user()['role'] == 'cook') {
+        }
+
         if (!$order) {
             return redirect()->back()->with('error', 'Order not found');
         }
-        return view('view_order', compact('order'));
+
+        // dd($order->toArray());
+
+        // $orderdata = [];
+
+        // foreach ($order->menu as $menu) {
+        //     $menuDetails = [
+        //         'item_name' => $menu->item_name,
+        //         'size' => '',
+        //         'qty' => '',
+        //         'price' => '',
+        //     ];
+        //     // dd($order->order_menu);
+        //     foreach ($order->order_menu as $order_menu) {
+        //         if ($menu->id == $order_menu->menu_id) {
+        //             $menuDetails['size'] = $order_menu->full_or_half === 1 ? 'Full' : ($order_menu->full_or_half === 2 ? 'Half' : '');
+        //             $menuDetails['qty'] = $order_menu->qty;
+        //                 $menuDetails['price'] = $order_menu->full_or_half === 1 ? $menu->full_item_price * $order_menu->qty : ($order_menu->full_or_half === 2 ? $menu->half_item_price * $order_menu->qty : '');
+        //         }
+        //     }
+
+        //     $orderdata[] = $menuDetails;
+        // }
+
+      $order_status = [];
+      switch(Auth::user()['role']){
+        case 'admin': 
+            $order_status = Order_Status::all();
+            break;
+            case 'cook' :
+            $order_status = Order_Status::whereIn('status', ['Preparing', 'Ready'])->get();
+            break;
+            case 'waiter':
+                $order_status = Order_Status::whereIn('status', ['Served'])->get();
+                break;
+      }
+        return view('view_order', compact('order', 'order_status'));
     }
+
+
     public function update_order_status(Request $request, $orderid)
     {
         $order_status = Order::find($orderid);

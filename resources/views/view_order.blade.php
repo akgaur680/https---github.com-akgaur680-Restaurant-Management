@@ -1,9 +1,3 @@
-<?php
-
-use App\Models\Order_Status;
-
-$order_status = Order_Status::all();
-?>
 @extends('layouts.master')
 @section('View-Order-Section')
 <div class="content-wrapper">
@@ -39,7 +33,7 @@ $order_status = Order_Status::all();
                             <div class="container row">
                                 <h5>Order Description</h5>
                                 <hr>
-                                <div class="col-sm-8">
+                                <div class="col-sm-12">
                                     <table class="table table-light">
                                         <tbody class="table-bordered" style="position: sticky ;">
                                             <tr>
@@ -47,83 +41,46 @@ $order_status = Order_Status::all();
                                                 <th>Item Name</th>
                                                 <th>Size</th>
                                                 <th>Quantity</th>
+                                                <th>Per Item Price</th>
+                                                <th>Total Price</th>
                                             </tr>
-                                            @foreach ($order->menu as $menu )
+                                            @foreach ($order['order_menu'] as $menu )
                                             <tr>
                                                 <td>{{$loop->iteration}}</td>
                                                 <td>
-                                                    {{$menu->item_name}}<br>
+                                                    {{$menu['menu']['item_name']}}<br>
                                                 </td>
                                                 <td>
-                                                @foreach ($order->order_menu as $order_menu )
-                                                @if ($menu->id == $order_menu->menu_id)
-                                                   @if($order_menu->full_or_half === 1)Full<br>
-                                                   @elseif($order_menu->full_or_half === 2)Half<br>
-                                                    @endif
-                                                    @endif
-                                                    @endforeach
+                                                    {{$menu['full_or_half'] == 1 ? 'Full' : 'Half'}}
                                                 </td>
                                                 <td>
-                                                    @foreach ($order->order_menu as $order_menu )
-                                                    @if ($menu->id == $order_menu->menu_id)
-                                                    {{($order_menu->qty)}}<br>
-                                                    @endif
-                                                    @endforeach
+                                                    {{$menu['qty']}}
+                                                </td>
+                                                <td>
+                                                    {{ $menu['full_or_half'] == 1 ? ($menu['menu']['full_item_price']) : ($menu['menu']['half_item_price'])}}
+                                                </td>
+                                                <td>
+                                                    {{ $menu['full_or_half'] == 1 ? ($menu['menu']['full_item_price'] * $menu['qty']) : ($menu['menu']['half_item_price'] * $menu['qty'])}}
                                                 </td>
                                             </tr>
                                             @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div class="col-sm-4">
-                                    <table class="table table-light">
-                                        <tbody class="" style="position: sticky ;">
-                                            <tr>
-                                                @if (Auth::user()['role']=='cook')
-                                                <th>Customization</th>
-                                                @else
-                                                <th>Price</th>
+                                            <tr style="border-top:2px solid">
+                                                @if(Auth::user()['role']!=='cook')
+                                                <td colspan="5">
+                                                    Total Amount Payable
+                                                </td>
+                                                <td>
+                                                    {{$order['order_total_price']}}/-
+                                                </td>
                                                 @endif
                                             </tr>
-                                            @if(Auth::user()['role']=='cook')
-                                            <tr>
-                                                <td>
-                                                    {{$order->customization}}
-                                                </td>
-                                            </tr>
-                                            @endif
-                                            @foreach ($order->menu as $menu )
-
-                                            <tr>
-                                                <td>
-                                                    @foreach ($order->order_menu as $order_menu )
-                                                    @if ($menu->id == $order_menu->menu_id)
-                                                    @if ($order_menu->full_or_half === 1)
-                                                    {{$menu->full_item_price * $order_menu->qty}}<br>
-                                                    @elseif($order_menu->full_or_half === 2)
-                                                    {{$menu->half_item_price * $order_menu->qty}}<br>
-                                                    @endif
-                                                    @endif
-                                                    @endforeach
-                                                </td>
-                                            </tr>
-                                            @endforeach
                                         </tbody>
                                     </table>
                                 </div>
+
                             </div>
                             <hr>
-                            @if(Auth::user()['role']!=='cook')
-                            <div class="row text-center">
-                                <div class="col-sm-6">
-                                    <h6>Total Amount Payable</h6>
-                                </div>
-                                <div class="col-sm-6">
-                                    <h6>{{$order->order_total_price}}/-</h6>
-                                </div>
-                            </div>
-                            <hr>
-                            @endif
+
                             <form action="{{'/update_order_status'}}/{{$order->id}}" method="POST">
                                 @method('PUT')
                                 @csrf

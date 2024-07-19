@@ -18,7 +18,12 @@ class Order_Menu extends Model
         'qty',
     ];
 
+    public function menu()
+    {
+        return $this->belongsTo(Menu::class, 'menu_id');
+    }
    
+    
 
 }
 

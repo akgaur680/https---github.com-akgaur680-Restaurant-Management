@@ -1,5 +1,3 @@
-
-
 @extends('layouts.master')
 @section('All-Order-Section')
 <div class="content-wrapper">
@@ -12,14 +10,10 @@
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
                         {{session('success')}}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-
                     </div>
-
                     @endif
                 </div>
                 <div class="col-sm-6">
-
-
                     <h1>View Orders</h1>
                 </div>
             </div>
@@ -47,7 +41,6 @@
                                     @endif
                                     @if (Auth::user()['role']!=='waiter')
                                     <th>Waiter Name</th>
-                                    
                                     @endif
                                     <th>Status</th>
                                     <th>Operations</th>
@@ -82,13 +75,9 @@
                                         {{$orders->cook->name ?? 'N/A'}}
                                     </td>
                                     @endif
-
                                     @if (Auth::user()['role']!=='waiter')
                                     <td>{{$orders->waiter->name ?? 'N/A'}}</td>
-                                    
                                     @endif
-
-                                   
                                     <td>
                                         @if (Auth::user()['role']=='admin')
                                         <span class="badge badge-primary">{{$orders->order_status->status}}</span>
