@@ -12,6 +12,13 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                     @endif
+                    @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ session('error') }}
+
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            @endif
                 </div>
                 <div class="col-sm-6">
                     <h1>View Orders</h1>
@@ -23,7 +30,36 @@
     <section class="content">
         <div class="container-fluid">
             <div class="row">
-                <div class="col-12">
+                <div class="col-12 text-center">
+                    <div class="card m-auto mb-4" style="width: 90%;">
+                        <div class="card-body row">
+                            <div class="col-md-3">
+                                <form action="" method="get">
+                                    <label>Filter By Date</label>
+                                    <input type="date" name="date" value="{{ request('date', '') }}"  class="form-control">
+                            </div>
+                            <div class="col-md-3">
+                                <label>Filter By Status</label>
+                                <select name="status" class="form-select">
+                                    <option value="">Choose....</option>
+                                    @foreach ($order_status as $order_stat )
+                                    <option value="{{ $order_stat->id }}" {{ request('status') == $order_stat->id ? 'selected' : '' }}>
+                                        {{ $order_stat->status }}
+                                    </option>
+                                    @endforeach
+
+                                </select>
+                            </div>
+                            <div class="col-md-6 m-auto">
+                                <button type="submit" class="btn btn-primary">Filter</button>
+                                <a href="/all-orders" class="btn btn-danger" >Remove Filter </a>
+                            </div>
+                            </form>
+
+                        </div>
+
+                    </div>
+
                     <!-- Default box -->
                     <div class="m-auto table-responsive-sm text-center" style="width: 90%;">
                         <table class="table table-hover align-middle table-sm">
@@ -35,6 +71,7 @@
                                     <th>Item Name</th>
                                     <th>Quantity</th>
                                     <th>Price</th>
+
                                     @endif
                                     @if (Auth::user()['role']!=='cook')
                                     <th>Cook Name</th>
@@ -66,7 +103,7 @@
                                         @if($orders->order_total_price === NULL)
                                         0
                                         @else
-                                        {{ $orders->order_total_price }}
+                                        {{ $orders->order_total_price }}/-
                                         @endif
                                     </td>
                                     @endif

@@ -14,11 +14,12 @@ class Adminpanel
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next)
     {
-        if(!Auth::user()){
-            return redirect('/login')->with('error', 'Please Login First');
+        if (Auth::check() && Auth::user()->role === 'admin') {
+            return $next($request);
         }
-        return $next($request);
+        return redirect()->back()->with('error', 'Access denied. Admins only.');
+    
     }
 }

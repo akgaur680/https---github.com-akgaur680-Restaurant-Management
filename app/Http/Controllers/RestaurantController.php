@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Http\Controllers;
-
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -13,7 +11,6 @@ use App\Models\Menu;
 use App\Models\Order;
 use App\Models\Order_Menu;
 use App\Models\Order_Status;
-
 class RestaurantController extends Controller
 {
     public function index()
@@ -145,7 +142,8 @@ class RestaurantController extends Controller
     {
         $user = User::find($userid);
         if ($request->hasFile('profile_image')) {
-            $filename = $request->profile_image->getClientOriginalExtension();
+            $file = $request->profile_image;
+            $filename = date('Ymd') . '_' . time() . '.' . $file->getClientOriginalExtension();
             //Save Image to Folder
             $request->profile_image->storeAs('public/uploads', $filename);
             $user->profile_image  = $filename;
@@ -257,33 +255,60 @@ class RestaurantController extends Controller
         }
         return redirect()->route('res.book_order')->with('success', 'Order Booked Successfully');
     }
-    public function all_order()
+
+    // Create Helper Method to view status based on the role & use this method in view_order & all_order methods.
+    private function getOrderStatus()
     {
-        if (Auth::user()['role'] !== 'admin') {
-            $order = Order::with(['menu', 'cook', 'waiter', 'order_menu', 'order_status'])->where('cook_id', Auth::user()['id'])
-                ->orWhere('waiter_id', Auth::user()['id'])
-                ->orderBy('status_id', 'asc')->get();
-        } elseif (Auth::user()['role'] == 'admin') {
-            $order = Order::with(['menu', 'cook', 'waiter', 'order_menu', 'order_status'])->orderBy('status_id', 'asc')->get();
+        $order_status = [];
+        switch (Auth::user()['role']) {
+            case 'admin':
+                $order_status = Order_Status::all();
+                break;
+            case 'cook':
+                $order_status = Order_Status::whereIn('status', ['Preparing', 'Ready'])->get();
+                break;
+            case 'waiter':
+                $order_status = Order_Status::whereIn('status', ['Served'])->get();
+                break;
         }
-        return view('all_order', compact('order'));
+        return $order_status;
+    }
+    public function all_order(Request $request)
+    {
+       // Start building the query with eager loading
+    $ordersQuery = Order::with(['menu', 'cook', 'waiter', 'order_menu', 'order_status']);
+
+    // Check if the user is not an admin
+    if (Auth::user()->role !== 'admin') {
+        $ordersQuery->where(function ($query) {
+            $query->where('cook_id', Auth::id())
+                  ->orWhere('waiter_id', Auth::id());
+        });
+    }
+    // Apply status filter if provided
+    if ($request->has('status') && $request->status != '') {
+        $ordersQuery->where('status_id', $request->status);
+    }
+    if($request->has('date') && $request->date != '' ){
+        $ordersQuery->whereDate('created_at', $request->date);
+    }
+    // Execute the query and sort by status_id
+    $order = $ordersQuery->orderBy('status_id', 'asc')->get();
+
+    $order_status = $this->getOrderStatus();
+        return view('all_order', compact('order', 'order_status'));
     }
     public function view_order(Request $request, $orderid)
     {
         $order = Order::with(['cook', 'waiter', 'order_menu.menu', 'order_status'])->find($orderid);
-
         $order_status = Order_Status::all();
         if (Auth::user()['role'] == 'cook') {
         }
-
         if (!$order) {
             return redirect()->back()->with('error', 'Order not found');
         }
-
         // dd($order->toArray());
-
         // $orderdata = [];
-
         // foreach ($order->menu as $menu) {
         //     $menuDetails = [
         //         'item_name' => $menu->item_name,
@@ -299,26 +324,12 @@ class RestaurantController extends Controller
         //                 $menuDetails['price'] = $order_menu->full_or_half === 1 ? $menu->full_item_price * $order_menu->qty : ($order_menu->full_or_half === 2 ? $menu->half_item_price * $order_menu->qty : '');
         //         }
         //     }
-
         //     $orderdata[] = $menuDetails;
         // }
 
-      $order_status = [];
-      switch(Auth::user()['role']){
-        case 'admin': 
-            $order_status = Order_Status::all();
-            break;
-            case 'cook' :
-            $order_status = Order_Status::whereIn('status', ['Preparing', 'Ready'])->get();
-            break;
-            case 'waiter':
-                $order_status = Order_Status::whereIn('status', ['Served'])->get();
-                break;
-      }
+        $order_status = $this->getOrderStatus();
         return view('view_order', compact('order', 'order_status'));
     }
-
-
     public function update_order_status(Request $request, $orderid)
     {
         $order_status = Order::find($orderid);

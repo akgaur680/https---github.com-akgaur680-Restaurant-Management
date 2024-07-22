@@ -14,13 +14,11 @@ class CookPanel
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next): Response
+    public function handle(Request $request, Closure $next)
     {
-        if (!(Auth::user()['role'] == 'cook')) {
-            // User is not an admin, redirect back with error
-            return redirect()->back()->with('error', 'You Want to redirect the page to Other Section.');
-            
+        if (Auth::check() && Auth::user()->role === 'cook') {
+            return $next($request);
         }
-        return $next($request);
+        return redirect()->back()->with('error', 'Access denied. Cooks only.');
     }
 }

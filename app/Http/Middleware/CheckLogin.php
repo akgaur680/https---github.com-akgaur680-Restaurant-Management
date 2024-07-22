@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
-class WaiterPanel
+class CheckLogin
 {
     /**
      * Handle an incoming request.
@@ -16,11 +16,12 @@ class WaiterPanel
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!(Auth::user()['role'] == 'waiter')) {
-            // User is not an admin, redirect back with error
-            return redirect()->back()->with('error', 'You Want to redirect the page to Other Section.');
+        if (!Auth::user()) {
+            // User is not authenticated, redirect to login
+            return redirect('/login')->with('error', 'Please log in as an user.');
             
         }
+        
         return $next($request);
     }
 }
